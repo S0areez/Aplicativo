@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 import '../global.css';
 
@@ -23,8 +24,6 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 import { useSession } from '../src/hooks/useSession';
-import { ConnectScreen } from '../src/screens/ConnectScreen';
-import { LoginScreen } from '../src/screens/LoginScreen';
 import { useAuthStore } from '../src/store/useAuthStore';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -60,22 +59,36 @@ export default function RootLayout() {
 }
 
 function RootLayoutNavWithAuth() {
-  const { user, partnerId } = useAuthStore();
+  const { user, partnerId, isLoading } = useAuthStore();
   useSession(); // Ativa o monitoramento de sessão
 
-  if (!user) return <LoginScreen />;
-  if (!partnerId) return <ConnectScreen />;
-
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
   const colorScheme = useColorScheme();
+
+  console.log('RootLayoutNavWithAuth state:', { 
+    isLoading,
+    hasUser: !!user, 
+    hasPartnerId: !!partnerId,
+    userId: user?.id 
+  });
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-slate-950 justify-center items-center">
+        <ActivityIndicator size="large" color="#6366f1" />
+      </View>
+    );
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        {!user ? (
+          <Stack.Screen name="login" />
+        ) : !partnerId ? (
+          <Stack.Screen name="connect" />
+        ) : (
+          <Stack.Screen name="(tabs)" />
+        )}
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>

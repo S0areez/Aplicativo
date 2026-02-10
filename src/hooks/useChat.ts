@@ -2,8 +2,16 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/useAuthStore';
 
+export interface Message {
+  id: number;
+  created_at: string;
+  content: string;
+  sender_id: string;
+  receiver_id: string;
+}
+
 export const useChat = () => {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const { user, partnerId } = useAuthStore();
 
   useEffect(() => {
@@ -37,7 +45,7 @@ export const useChat = () => {
           table: 'messages',
         },
         (payload) => {
-          const newMessage = payload.new;
+          const newMessage = payload.new as Message;
           if (
             (newMessage.sender_id === user.id && newMessage.receiver_id === partnerId) ||
             (newMessage.sender_id === partnerId && newMessage.receiver_id === user.id)
