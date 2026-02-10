@@ -62,7 +62,10 @@ export const useChat = () => {
   }, [user, partnerId]);
 
   const sendMessage = async (content: string) => {
-    if (!user || !partnerId) return;
+    if (!user || !partnerId) {
+      console.error('Cannot send message: user or partnerId missing', { userId: user?.id, partnerId });
+      throw new Error('Você ainda não está conectado com sua namorada.');
+    }
 
     const { error } = await supabase.from('messages').insert([
       { 
@@ -74,6 +77,7 @@ export const useChat = () => {
 
     if (error) {
       console.error('Error sending message:', error);
+      throw error;
     }
   };
 

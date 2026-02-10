@@ -37,13 +37,23 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <ActivityIndicator color="#6366f1" size="large" className="mt-10" />
+        ) : moments.length === 0 ? (
+          <View className="items-center mt-10">
+            <Text className="text-slate-500 text-lg">Nenhum momento compartilhado ainda.</Text>
+            <Text className="text-slate-600 text-sm mt-2">Clique no "+" para adicionar!</Text>
+          </View>
         ) : (
           moments.map((moment) => (
-            <View key={moment.id} className="bg-slate-900 p-4 rounded-3xl mb-4 border border-slate-800">
-              <Text className="text-white text-lg">{moment.description}</Text>
-              <Text className="text-slate-500 text-sm mt-2">
-                {new Date(moment.created_at).toLocaleDateString()}
-              </Text>
+            <View key={moment.id} className="bg-slate-900 p-5 rounded-3xl mb-4 border border-slate-800">
+              <View className="flex-row justify-between items-start mb-3">
+                <Text className="text-slate-400 font-semibold text-sm">
+                  {moment.profiles?.full_name || 'Alguém'}
+                </Text>
+                <Text className="text-slate-600 text-xs">
+                  {new Date(moment.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+              <Text className="text-white text-lg leading-6">{moment.description}</Text>
             </View>
           ))
         )}

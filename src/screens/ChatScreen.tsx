@@ -8,10 +8,15 @@ export function ChatScreen() {
   const { messages, sendMessage } = useChat();
   const { user } = useAuthStore();
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (text.trim()) {
-      sendMessage(text.trim());
-      setText('');
+      try {
+        const messageText = text.trim();
+        setText(''); // Limpa o input imediatamente para melhor UX
+        await sendMessage(messageText);
+      } catch (error: any) {
+        alert(error.message || 'Erro ao enviar mensagem. Verifique sua conexão.');
+      }
     }
   };
 

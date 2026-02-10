@@ -58,6 +58,7 @@ export const useSession = () => {
       setUser(session?.user ?? null);
       if (session) {
         fetchProfile(session.user.id);
+        subscribeToProfileChanges(session.user.id);
       } else {
         setPartnerId(null);
         setIsLoading(false);
@@ -67,8 +68,33 @@ export const useSession = () => {
     return () => {
       subscription.remove();
       authSubscription.unsubscribe();
+      supabase.removeAllChannels();
     };
   }, []);
+
+  const subscribeToProfileChanges = (userId: string) => {
+    console.log('Subscribing to profile changes for:', userId);
+    supabase
+      .channel(`profile:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Profile updated in real-time:', payload.new);
+          if (payload.new.partner_id) {
+            setIsLoading(true); // Mostra o loading brevemente para forçar o re-render do layout
+            setPartnerId(payload.new.partner_id);
+            setTimeout(() => setIsLoading(false), 500);
+          }
+        }
+      )
+      .subscribe();
+  };
 
   const fetchProfile = async (userId: string) => {
     try {
