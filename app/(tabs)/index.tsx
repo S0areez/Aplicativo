@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { MoodSelector } from '../../src/components/MoodSelector';
 import { UploadModal } from '../../src/components/UploadModal';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useMoments } from '../../src/hooks/useMoments';
-
 import { useAuthStore } from '../../src/store/useAuthStore';
 
 export default function HomeScreen() {
@@ -47,16 +46,27 @@ export default function HomeScreen() {
           </View>
         ) : (
           moments.map((moment) => (
-            <View key={moment.id} className="bg-slate-900 p-5 rounded-3xl mb-4 border border-slate-800">
-              <View className="flex-row justify-between items-start mb-3">
-                <Text className="text-slate-400 font-semibold text-sm">
-                  {moment.profiles?.full_name || (moment.user_id === user?.id ? 'Você' : 'Parceiro(a)')}
-                </Text>
-                <Text className="text-slate-600 text-xs">
-                  {new Date(moment.created_at).toLocaleDateString()}
-                </Text>
+            <View key={moment.id} className="bg-slate-900 rounded-3xl mb-6 overflow-hidden border border-slate-800">
+              {moment.image_url && (
+                <Image 
+                  source={{ uri: moment.image_url }} 
+                  className="w-full h-64 bg-slate-800"
+                  resizeMode="cover"
+                />
+              )}
+              <View className="p-5">
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-indigo-400 font-bold text-sm">
+                    {moment.user_id === user?.id ? 'Você' : 'Parceiro(a)'}
+                  </Text>
+                  <Text className="text-slate-600 text-xs">
+                    {new Date(moment.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+                {moment.description ? (
+                  <Text className="text-white text-base leading-6">{moment.description}</Text>
+                ) : null}
               </View>
-              <Text className="text-white text-lg leading-6">{moment.description}</Text>
             </View>
           ))
         )}
