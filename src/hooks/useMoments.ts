@@ -8,9 +8,30 @@ export function useMoments() {
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (user) {
-      fetchMoments();
-    }
+    if (!user) return;
+
+    fetchMoments();
+
+    // Inscrição em tempo real para o mural
+    const channel = supabase
+      .channel('moments_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Escuta INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'moments',
+        },
+        () => {
+          // Atualiza a lista automaticamente quando houver mudanças
+          fetchMoments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchMoments = async () => {

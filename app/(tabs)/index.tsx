@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, Image, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { MoodSelector } from '../../src/components/MoodSelector';
 import { UploadModal } from '../../src/components/UploadModal';
 import { useAuth } from '../../src/hooks/useAuth';
@@ -10,8 +10,16 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 export default function HomeScreen() {
   const { moments, isLoading, refetch } = useMoments();
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { signOut } = useAuth();
   const user = useAuthStore((state) => state.user);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   return (
     <View className="flex-1 bg-slate-950 pt-12 px-4">
@@ -36,8 +44,18 @@ export default function HomeScreen() {
 
       <MoodSelector />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {isLoading ? (
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#6366f1"
+            colors={["#6366f1"]}
+          />
+        }
+      >
+        {isLoading && !refreshing ? (
           <ActivityIndicator color="#6366f1" size="large" className="mt-10" />
         ) : moments.length === 0 ? (
           <View className="items-center mt-10">
@@ -48,11 +66,16 @@ export default function HomeScreen() {
           moments.map((moment) => (
             <View key={moment.id} className="bg-slate-900 rounded-3xl mb-6 overflow-hidden border border-slate-800">
               {moment.image_url && (
-                <Image 
-                  source={{ uri: moment.image_url }} 
-                  className="w-full h-64 bg-slate-800"
-                  resizeMode="cover"
-                />
+                <TouchableOpacity 
+                  activeOpacity={0.9} 
+                  onPress={() => setSelectedImage(moment.image_url)}
+                >
+                  <Image 
+                    source={{ uri: moment.image_url }} 
+                    className="w-full h-64 bg-slate-800"
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
               )}
               <View className="p-5">
                 <View className="flex-row justify-between items-center mb-2">
@@ -71,6 +94,31 @@ export default function HomeScreen() {
           ))
         )}
       </ScrollView>
+
+      {/* Modal para Ver Foto Completa */}
+      <Modal
+        visible={!!selectedImage}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <View className="flex-1 bg-black/95 justify-center items-center">
+          <TouchableOpacity 
+            style={{ position: 'absolute', top: 50, right: 20, zIndex: 10 }}
+            onPress={() => setSelectedImage(null)}
+          >
+            <Ionicons name="close-circle" size={40} color="white" />
+          </TouchableOpacity>
+          
+          {selectedImage && (
+            <Image 
+              source={{ uri: selectedImage }}
+              style={{ width: '100%', height: '80%' }}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
 
       <UploadModal 
         visible={modalVisible} 
