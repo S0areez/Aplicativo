@@ -8,6 +8,8 @@ export interface Message {
   content: string;
   sender_id: string;
   receiver_id: string;
+  reply_to?: number;
+  reply_content?: string;
 }
 
 export const useChat = () => {
@@ -61,7 +63,7 @@ export const useChat = () => {
     };
   }, [user, partnerId]);
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, replyTo?: { id: number, content: string }) => {
     if (!user || !partnerId) {
       console.error('Cannot send message: user or partnerId missing', { userId: user?.id, partnerId });
       throw new Error('Você ainda não está conectado com sua namorada.');
@@ -71,7 +73,9 @@ export const useChat = () => {
       { 
         sender_id: user.id, 
         receiver_id: partnerId, 
-        content 
+        content,
+        reply_to: replyTo?.id,
+        reply_content: replyTo?.content
       }
     ]);
 

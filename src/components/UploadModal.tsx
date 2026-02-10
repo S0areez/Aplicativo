@@ -26,14 +26,23 @@ export function UploadModal({ visible, onClose, onUploadSuccess }: { visible: bo
   const handleUpload = async () => {
     if (!description && !image) return;
     
+    // Pega o ID do usuário direto da sessão atual do Supabase para ser infalível
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id || user?.id;
+
+    if (!currentUserId) {
+      alert("Erro: Usuário não identificado. Tente fazer logout e login novamente.");
+      return;
+    }
+
     setLoading(true);
     try {
       let imageUrl = null;
 
       if (image) {
         const fileExt = image.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${user?.id}/${fileName}`;
+        const fileName = `${currentUserId}-${Math.random()}.${fileExt}`;
+        const filePath = `${currentUserId}/${fileName}`;
 
         const formData = new FormData();
         formData.append('file', {
@@ -59,8 +68,7 @@ export function UploadModal({ visible, onClose, onUploadSuccess }: { visible: bo
         {
           description,
           image_url: imageUrl,
-          user_id: user?.id,
-          created_at: new Date(),
+          user_id: currentUserId,
         },
       ]);
 
