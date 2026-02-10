@@ -50,7 +50,7 @@ export default function HomeScreen() {
             <View key={moment.id} className="bg-slate-900 p-5 rounded-3xl mb-4 border border-slate-800">
               <View className="flex-row justify-between items-start mb-3">
                 <Text className="text-slate-400 font-semibold text-sm">
-                  {moment.user_id === user?.id ? 'Você' : 'Parceiro(a)'}
+                  {moment.profiles?.full_name || (moment.user_id === user?.id ? 'Você' : 'Parceiro(a)')}
                 </Text>
                 <Text className="text-slate-600 text-xs">
                   {new Date(moment.created_at).toLocaleDateString()}
