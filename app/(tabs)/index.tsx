@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Image, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, RefreshControl, Modal } from 'react-native';
 import { MoodSelector } from '../../src/components/MoodSelector';
 import { UploadModal } from '../../src/components/UploadModal';
 import { useAuth } from '../../src/hooks/useAuth';
