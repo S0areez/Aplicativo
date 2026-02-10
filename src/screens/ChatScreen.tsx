@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { Message, useChat } from '../hooks/useChat';
 import { useAuthStore } from '../store/useAuthStore';
@@ -11,20 +11,10 @@ export function ChatScreen() {
   const { user } = useAuthStore();
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
+  const swipeableRefs = useRef<Map<number, any>>(new Map());
 
-  // Rola para o final quando as mensagens carregam ou o teclado abre
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    });
-    return () => keyboardDidShowListener.remove();
-  }, []);
+  // Inverte as mensagens para o FlatList inverted (mais recentes primeiro)
+  const reversedMessages = [...messages].reverse();
 
   const handleSend = async () => {
     if (text.trim()) {
@@ -68,14 +58,22 @@ export function ChatScreen() {
 
     return (
       <Swipeable
-        renderRightActions={() => (
-          <View className="justify-center items-center px-4">
-            <Text className="text-indigo-400 text-xs">Responder</Text>
+        ref={(ref) => {
+          if (ref) swipeableRefs.current.set(item.id, ref);
+          else swipeableRefs.current.delete(item.id);
+        }}
+        renderLeftActions={() => (
+          <View className="justify-center items-start px-6">
+            <Text className="text-indigo-400 text-xs font-bold">Responder</Text>
           </View>
         )}
-        onSwipeableOpen={() => {
+        onSwipeableWillOpen={() => {
           setReplyTo({ id: item.id, content: item.content });
           inputRef.current?.focus();
+          // Fecha o swipe automaticamente após um pequeno delay
+          setTimeout(() => {
+            swipeableRefs.current.get(item.id)?.close();
+          }, 100);
         }}
       >
         {MessageContent}
@@ -90,15 +88,15 @@ export function ChatScreen() {
         className="flex-1 bg-slate-950"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <View className="flex-1 px-4 pt-2">
+        <View className="flex-1 px-4">
           <FlatList
             ref={flatListRef}
-            data={messages}
+            data={reversedMessages}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderMessage}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            inverted
+            contentContainerStyle={{ paddingVertical: 20 }}
           />
 
           <View className="pb-4">
