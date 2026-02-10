@@ -6,10 +6,13 @@ import { UploadModal } from '../../src/components/UploadModal';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useMoments } from '../../src/hooks/useMoments';
 
+import { useAuthStore } from '../../src/store/useAuthStore';
+
 export default function HomeScreen() {
   const { moments, isLoading, refetch } = useMoments();
   const [modalVisible, setModalVisible] = useState(false);
   const { signOut } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   return (
     <View className="flex-1 bg-slate-950 pt-12 px-4">
@@ -47,7 +50,7 @@ export default function HomeScreen() {
             <View key={moment.id} className="bg-slate-900 p-5 rounded-3xl mb-4 border border-slate-800">
               <View className="flex-row justify-between items-start mb-3">
                 <Text className="text-slate-400 font-semibold text-sm">
-                  {moment.profiles?.full_name || 'Alguém'}
+                  {moment.user_id === user?.id ? 'Você' : 'Parceiro(a)'}
                 </Text>
                 <Text className="text-slate-600 text-xs">
                   {new Date(moment.created_at).toLocaleDateString()}

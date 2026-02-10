@@ -18,7 +18,7 @@ export function useMoments() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('moments')
-        .select('*, profiles(full_name, avatar_url)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
